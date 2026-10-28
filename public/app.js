@@ -76,7 +76,7 @@ function loginView() {
   return `<main><div class="login card"><div class="logo">LADWP Field<span>Hub</span></div><div class="muted small" style="margin-bottom:1rem">Water Infrastructure Division · Prototype</div>
   <form onsubmit="return FH.login(event)"><label>Email</label><input name="email" type="email" autocomplete="username" required><label>Password</label><input name="password" type="password" autocomplete="current-password" required>
   <div class="err" id="lerr"></div><button class="btn block" style="margin-top:.8rem">Sign in</button></form>
-  <p class="hint" style="margin-top:1rem">Demo accounts (password <b>fieldhub</b>): re@, inspector@, contractor@, viewer@, admin@ fieldhub.local</p></div></main>`;
+  <div class="hint" style="margin-top:1rem">Sample accounts (ask the RE for the password):<br>re@fieldhub.local · inspector@fieldhub.local<br>contractor@fieldhub.local · viewer@fieldhub.local</div></div></main>`;
 }
 function inviteView(token) {
   return `<main><div class="login card"><div class="logo">LADWP Field<span>Hub</span></div><h2>Set up your account</h2>
