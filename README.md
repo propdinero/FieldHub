@@ -37,6 +37,8 @@ The first boot seeds project **23145 Western Trunk Line Phase 2A** with a week o
 
 Change the demo password with `SEED_PASSWORD`, or set `AUTO_SEED=0` to start empty.
 
+**Demo mode** is on by default: the sign-in screen offers one-click entry as any sample role. Set `DEMO_MODE=0` before anyone enters real data.
+
 ## Deploy to Railway (about 10 minutes)
 
 1. Push this folder to a GitHub repo.
@@ -61,7 +63,7 @@ Everything is in the `/data` volume: `fieldhub.sqlite` plus `uploads/`. Copy tha
 
 ## Environment variables
 
-See `.env.example`. `PORT`, `DATA_DIR`, `SEED_PASSWORD`, `AUTO_SEED`, `TZ_PROJECT`.
+See `.env.example`. `PORT`, `DATA_DIR`, `SEED_PASSWORD`, `AUTO_SEED`, `DEMO_MODE`, `TZ_PROJECT`.
 
 ## Known prototype limits
 

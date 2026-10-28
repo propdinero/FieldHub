@@ -54,6 +54,18 @@ app.post('/api/login', (req, res) => {
   audit(u.id, 'login', 'user', u.id, null, null, ip(req));
   res.json({ token, user: publicUser(u) });
 });
+// Demo mode: one-click sign-in as any sample account (DEMO_MODE=1). Turn off before real use.
+const DEMO = process.env.DEMO_MODE !== '0';
+app.get('/api/config', (_req, res) => res.json({ demo: DEMO }));
+app.post('/api/demo-login', (req, res) => {
+  if (!DEMO) return err(res, 404, 'Not found');
+  const u = q.get('SELECT * FROM users WHERE email=? AND active=1', `${req.body?.role}@fieldhub.local`);
+  if (!u) return err(res, 400, 'Unknown demo role');
+  const token = randomBytes(32).toString('hex');
+  q.run('INSERT INTO sessions (token,user_id) VALUES (?,?)', token, u.id);
+  audit(u.id, 'login', 'user', u.id, null, { demo: true }, ip(req));
+  res.json({ token, user: publicUser(u) });
+});
 app.post('/api/logout', auth, (req, res) => { q.run('DELETE FROM sessions WHERE token=?', req.headers.authorization.replace('Bearer ', '')); res.json({ ok: true }); });
 app.get('/api/me', auth, (req, res) => res.json(publicUser(req.user)));
 app.patch('/api/me', auth, (req, res) => {

@@ -43,7 +43,7 @@ async function render() {
   const app = $('#app');
   const hash = location.hash || '#/';
   if (hash.startsWith('#/invite/')) return app.innerHTML = inviteView(hash.split('/')[2]);
-  if (!S.token) return app.innerHTML = loginView();
+  if (!S.token) { if (S.config === undefined) { try { S.config = await get('/config'); } catch { S.config = {}; } } return app.innerHTML = loginView(); }
   if (!S.user) { try { S.user = await get('/me'); S.projects = await get('/projects'); } catch { return; } }
   const m = hash.match(/^#\/p\/(\d+)(?:\/([a-z_-]+))?(?:\/([^/?]+))?(?:\/([^/?]+))?/);
   if (!m) return app.innerHTML = projectsView();
@@ -73,10 +73,13 @@ function shell(content, page) {
 
 // ---------- login / invite ----------
 function loginView() {
+  const demo = S.config?.demo ? `<div class="small muted" style="margin:.2rem 0 .5rem">Pick a role to enter:</div>
+    <div class="list" style="margin-bottom:1.2rem">${[['re', 'Resident Engineer', 'Approves reports, answers RFIs, full access'], ['inspector', 'Inspector', 'Daily inspection reports and punch list'], ['contractor', 'Contractor', 'Pacific Pipeline – submits reports, RFIs, submittals'], ['viewer', 'Viewer', 'Read-only management view']].map(([r, l, d]) => `<a class="item" href="#" onclick="FH.demoLogin('${r}');return false"><div class="t">${l}</div><div class="s">${d}</div></a>`).join('')}</div>
+    <details><summary class="small muted" style="cursor:pointer">Sign in with email instead</summary>` : '';
   return `<main><div class="login card"><div class="logo">LADWP Field<span>Hub</span></div><div class="muted small" style="margin-bottom:1rem">Water Infrastructure Division · Prototype</div>
-  <form onsubmit="return FH.login(event)"><label>Email</label><input name="email" type="email" autocomplete="username" required><label>Password</label><input name="password" type="password" autocomplete="current-password" required>
+  ${demo}<form onsubmit="return FH.login(event)"><label>Email</label><input name="email" type="email" autocomplete="username" required><label>Password</label><input name="password" type="password" autocomplete="current-password" required>
   <div class="err" id="lerr"></div><button class="btn block" style="margin-top:.8rem">Sign in</button></form>
-  <div class="hint" style="margin-top:1rem">Sample accounts (ask the RE for the password):<br>re@fieldhub.local · inspector@fieldhub.local<br>contractor@fieldhub.local · viewer@fieldhub.local</div></div></main>`;
+  ${S.config?.demo ? '</details>' : ''}</div></main>`;
 }
 function inviteView(token) {
   return `<main><div class="login card"><div class="logo">LADWP Field<span>Hub</span></div><h2>Set up your account</h2>
@@ -334,6 +337,7 @@ const FH = window.FH = {
   async login(e) { e.preventDefault(); const f = new FormData(e.target); try { const r = await post('/login', Object.fromEntries(f)); S.token = r.token; localStorage.setItem('fh_token', r.token); S.user = null; location.hash = '#/'; render(); } catch (err) { $('#lerr').textContent = err.message; } return false; },
   async acceptInvite(e, token) { e.preventDefault(); const f = Object.fromEntries(new FormData(e.target)); try { await post('/accept-invite', { ...f, token }); toast('Account created. Sign in.'); location.hash = '#/login'; } catch (err) { $('#lerr').textContent = err.message; } return false; },
   logout: () => logout(),
+  async demoLogin(role) { try { const r = await post('/demo-login', { role }); S.token = r.token; localStorage.setItem('fh_token', r.token); S.user = null; S.project = null; location.hash = '#/p/1'; render(); } catch (e) { toast(e.message); } },
   account() {
     const u = S.user;
     modal(`<h2>${esc(u.name)}</h2><div class="muted small">${esc(u.email)} · ${u.role}${u.company ? ' · ' + esc(u.company) : ''}</div>
